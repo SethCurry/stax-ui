@@ -1,4 +1,4 @@
-export namespace config {
+export namespace services {
 	
 	export class MoxfieldExportConfig {
 	    username: string;

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Greet } from "../../wailsjs/go/main/App";
+import { Stack } from "@mui/material";
 
 function Home() {
   const [resultText, setResultText] = useState(
@@ -14,24 +15,9 @@ function Home() {
   }
 
   return (
-    <div id="App">
-      <div id="result" className="result">
-        {resultText}
-      </div>
-      <div id="input" className="input-box">
-        <input
-          id="name"
-          className="input"
-          onChange={updateName}
-          autoComplete="off"
-          name="input"
-          type="text"
-        />
-        <button className="btn" onClick={greet}>
-          Greet
-        </button>
-      </div>
-    </div>
+    <Stack spacing={2}>
+      <h1>Stax UI</h1>
+    </Stack>
   );
 }
 

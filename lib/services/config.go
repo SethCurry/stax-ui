@@ -1,4 +1,4 @@
-package config
+package services
 
 import (
 	"encoding/json"
@@ -9,14 +9,19 @@ import (
 	"sync"
 
 	"github.com/mitchellh/go-homedir"
+	"go.uber.org/zap"
 )
 
-func NewConfigService() *ConfigService {
-	return &ConfigService{}
+func NewConfigService(logger *zap.Logger) *ConfigService {
+	return &ConfigService{
+		logger: logger,
+		lock:   sync.Mutex{},
+	}
 }
 
 type ConfigService struct {
-	lock sync.Mutex
+	lock   sync.Mutex
+	logger *zap.Logger
 }
 
 func NewDefaultConfig() *Config {
@@ -30,8 +35,14 @@ type MoxfieldExportConfig struct {
 	Path     string `json:"path"`
 }
 
+type XMageConfig struct {
+	JavaPath    string `json:"java_path"`
+	InstallPath string `json:"install_path"`
+}
+
 type Config struct {
 	MoxfieldExports []MoxfieldExportConfig `json:"moxfield_exports"`
+	XMage           XMageConfig            `json:"xmage"`
 }
 
 func (c *Config) Marshal() ([]byte, error) {

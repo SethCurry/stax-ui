@@ -1,4 +1,4 @@
-package moxfield
+package services
 
 import (
 	"fmt"
@@ -9,13 +9,18 @@ import (
 
 	"github.com/SethCurry/stax/integrations/moxfield"
 	"github.com/SethCurry/stax/integrations/xmage"
+	"go.uber.org/zap"
 )
 
-func NewMoxfieldService() *MoxfieldService {
-	return &MoxfieldService{}
+func NewMoxfieldService(logger *zap.Logger) *MoxfieldService {
+	return &MoxfieldService{
+		logger: logger,
+	}
 }
 
-type MoxfieldService struct{}
+type MoxfieldService struct {
+	logger *zap.Logger
+}
 
 func (m *MoxfieldService) ExportDecksToXMage(username string, outputDir string) error {
 	if _, err := os.Stat(outputDir); os.IsNotExist(err) {
