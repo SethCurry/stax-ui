@@ -3,6 +3,9 @@ package main
 import (
 	"embed"
 
+	"github.com/SethCurry/staxui/lib/config"
+	"github.com/SethCurry/staxui/lib/moxfield"
+
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -14,6 +17,9 @@ var assets embed.FS
 func main() {
 	// Create an instance of the app structure
 	app := NewApp()
+
+	configs := config.NewConfigService()
+	moxfieldService := moxfield.NewMoxfieldService()
 
 	// Create application with options
 	err := wails.Run(&options.App{
@@ -27,9 +33,10 @@ func main() {
 		OnStartup:        app.startup,
 		Bind: []interface{}{
 			app,
+			configs,
+			moxfieldService,
 		},
 	})
-
 	if err != nil {
 		println("Error:", err.Error())
 	}

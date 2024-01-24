@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -20,12 +21,17 @@ type ConfigService struct {
 
 func NewDefaultConfig() *Config {
 	return &Config{
-		MoxfieldUsername: "",
+		MoxfieldExports: []MoxfieldExportConfig{},
 	}
 }
 
+type MoxfieldExportConfig struct {
+	Username string `json:"username"`
+	Path     string `json:"path"`
+}
+
 type Config struct {
-	MoxfieldUsername string `json:"moxfield_username"`
+	MoxfieldExports []MoxfieldExportConfig `json:"moxfield_exports"`
 }
 
 func (c *Config) Marshal() ([]byte, error) {
@@ -85,9 +91,23 @@ func writeConfig(newConfig *Config) error {
 		return err
 	}
 
-	configFile, err := os.OpenFile(configPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o600)
+	configFile, err := os.Create(configPath)
 	if err != nil {
-		return err
+		if os.IsNotExist(err) {
+			configDirectory, err := getConfigDirectory()
+			if err != nil {
+				return err
+			}
+
+			os.MkdirAll(configDirectory, 0o700)
+
+			configFile, err = os.Create(configPath)
+			if err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
 	}
 	defer configFile.Close()
 
@@ -104,11 +124,14 @@ func writeConfig(newConfig *Config) error {
 func (c *ConfigService) GetConfig() (*Config, error) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
+
 	gotConfig, err := getConfig()
 	if err != nil {
 		if os.IsNotExist(err) {
 			return NewDefaultConfig(), nil
 		}
+		fmt.Println("failed to read config file:", err.Error())
+		return nil, err
 	}
 
 	return gotConfig, nil
@@ -118,5 +141,12 @@ func (c *ConfigService) WriteConfig(newConfig *Config) error {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
-	return writeConfig(newConfig)
+	fmt.Println("Writing config")
+
+	err := writeConfig(newConfig)
+	if err != nil {
+		fmt.Println("Error writing config:", err.Error())
+	}
+
+	return err
 }
