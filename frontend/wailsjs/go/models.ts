@@ -1,5 +1,19 @@
 export namespace services {
 	
+	export class XMageConfig {
+	    java_path: string;
+	    install_path: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new XMageConfig(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.java_path = source["java_path"];
+	        this.install_path = source["install_path"];
+	    }
+	}
 	export class MoxfieldExportConfig {
 	    username: string;
 	    path: string;
@@ -16,6 +30,7 @@ export namespace services {
 	}
 	export class Config {
 	    moxfield_exports: MoxfieldExportConfig[];
+	    xmage: XMageConfig;
 	
 	    static createFrom(source: any = {}) {
 	        return new Config(source);
@@ -24,6 +39,7 @@ export namespace services {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.moxfield_exports = this.convertValues(source["moxfield_exports"], MoxfieldExportConfig);
+	        this.xmage = this.convertValues(source["xmage"], XMageConfig);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -44,6 +60,7 @@ export namespace services {
 		    return a;
 		}
 	}
+	
 
 }
 
