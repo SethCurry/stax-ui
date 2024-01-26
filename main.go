@@ -25,6 +25,7 @@ func main() {
 
 	configs := services.NewConfigService(logger.Named("config"))
 	moxfieldService := services.NewMoxfieldService(logger.Named("moxfield"))
+	xmageService := services.NewXMageService(logger.Named("xmage"))
 
 	// Create application with options
 	err = wails.Run(&options.App{
@@ -40,11 +41,13 @@ func main() {
 			app,
 			configs,
 			moxfieldService,
+			xmageService,
 		},
 		Windows: &windows.Options{
 			Theme: windows.Dark,
 		},
 	})
+
 	if err != nil {
 		println("Error:", err.Error())
 	}

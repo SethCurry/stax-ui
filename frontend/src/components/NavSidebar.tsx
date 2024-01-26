@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import colors from "../colors";
 import { CgExport } from "react-icons/cg";
+import { GiMagicGate } from "react-icons/gi";
 import { FaHome } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -35,6 +36,7 @@ export default function NavSidebar(props: NavSidebarProps) {
           <ListItem key="moxfield_export">
             <ListItemButton
               onClick={() => {
+                props.onClose();
                 navigate("/moxfield/export");
               }}
             >
@@ -42,6 +44,19 @@ export default function NavSidebar(props: NavSidebarProps) {
                 <CgExport />
               </ListItemIcon>
               <ListItemText primary="Moxfield" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem key="xmage">
+            <ListItemButton
+              onClick={() => {
+                props.onClose();
+                navigate("/xmage");
+              }}
+            >
+              <ListItemIcon>
+                <GiMagicGate />
+              </ListItemIcon>
+              <ListItemText primary="Xmage" />
             </ListItemButton>
           </ListItem>
         </List>

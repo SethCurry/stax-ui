@@ -61,7 +61,7 @@ export default function MoxfieldExport() {
   return (
     <Box width="100%" height="100%">
       Moxfield Export
-      <Stack direction="row" spacing={2}>
+      <Stack direction="column" spacing={2}>
         {exportConfigs.map((exportConfig, index) => {
           return (
             <ExportConfig

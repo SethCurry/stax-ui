@@ -3,10 +3,11 @@ import { HashRouter, Route, Routes } from "react-router-dom";
 import Home from "./routes/Home";
 import MoxfieldExport from "./routes/MoxfieldExport";
 import { DefaultContainer } from "./containers/DefaultContainer";
+import XmageLauncher from "./routes/XmageLauncher";
 
 export default function App() {
   return (
-    <Box width="100vw" height="100vh">
+    <Box width="100vw" height="100vh" overflow="hidden">
       <HashRouter basename={"/"}>
         <Routes>
           <Route
@@ -22,6 +23,14 @@ export default function App() {
             element={
               <DefaultContainer>
                 <MoxfieldExport />
+              </DefaultContainer>
+            }
+          />
+          <Route
+            path="/xmage"
+            element={
+              <DefaultContainer>
+                <XmageLauncher />
               </DefaultContainer>
             }
           />

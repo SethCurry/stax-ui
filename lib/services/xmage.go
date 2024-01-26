@@ -1,11 +1,12 @@
 package services
 
 import (
-	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 
 	"github.com/mitchellh/go-homedir"
 	"go.uber.org/zap"
@@ -46,7 +47,7 @@ type XMageService struct {
 // ensure libraries and binaries are symlinked in
 // copy in config if it doesn't exist
 // Change working directory
-func (x *XMageService) StartClient() error {
+func (x *XMageService) StartXmage() error {
 	gotConfig, err := getConfig()
 	if err != nil {
 		x.logger.Error("failed to get config", zap.Error(err))
@@ -78,8 +79,12 @@ func (x *XMageService) StartClient() error {
 	ensureSymlinksExist := map[string]string{
 		filepath.Join(xmageInstall, "xmage", "mage-client", "lib"):               filepath.Join(versionDir, "mage-client", "lib"),
 		filepath.Join(xmageInstall, "xmage", "mage-client", "plugins", "images"): filepath.Join(versionDir, "mage-client", "plugins", "images"),
+		filepath.Join(xmageInstall, "xmage", "mage-client", "config"):            filepath.Join(versionDir, "mage-client", "config"),
 		filepath.Join(xmageInstall, "xmage", "mage-client", "sounds"):            filepath.Join(versionDir, "mage-client", "sounds"),
-		filepath.Join(xmageInstall, "xmage", "mage-client", "cacerts"):           filepath.Join(versionDir, "mage-client", "cacerts"),
+	}
+
+	ensureFilesCopied := map[string]string{
+		filepath.Join(xmageInstall, "xmage", "mage-client", "cacerts"): filepath.Join(versionDir, "mage-client", "cacerts"),
 	}
 
 	for _, v := range ensureDirectoriesExist {
@@ -94,7 +99,8 @@ func (x *XMageService) StartClient() error {
 
 	for from, to := range ensureSymlinksExist {
 		if _, err := os.Stat(to); os.IsNotExist(err) {
-			err = os.Symlink(from, to)
+			// err = os.Symlink(from, to)
+			err = exec.Command("cmd", "/C", "mklink", "/J", to, from).Run()
 			if err != nil {
 				x.logger.Error("failed to create symlink", zap.String("from", from), zap.String("to", to), zap.Error(err))
 				return err
@@ -102,18 +108,49 @@ func (x *XMageService) StartClient() error {
 		}
 	}
 
+	for from, to := range ensureFilesCopied {
+		toFd, err := os.Create(to)
+		if err != nil {
+			x.logger.Error("failed to create file", zap.String("path", to), zap.Error(err))
+			return err
+		}
+		defer toFd.Close()
+
+		fromFd, err := os.Open(from)
+		if err != nil {
+			x.logger.Error("failed to open file", zap.String("path", from), zap.Error(err))
+			return err
+		}
+		defer fromFd.Close()
+
+		_, err = io.Copy(toFd, fromFd)
+		if err != nil {
+			x.logger.Error("failed to copy file", zap.String("from", from), zap.String("to", to), zap.Error(err))
+			return err
+		}
+		toFd.Close()
+		fromFd.Close()
+	}
+
+	minMemoryMB := int(gotConfig.XMage.MinMemoryGB * 1024)
+	maxMemoryMB := int(gotConfig.XMage.MaxMemoryGB * 1024)
+
 	cmd := exec.Command(
-		filepath.Join(gotConfig.XMage.JavaPath, "bin", "javaw"),
-		"-Xms"+fmt.Sprintf("%0.1f", gotConfig.XMage.MinMemoryGB)+"g",
-		"-Xmx"+fmt.Sprintf("%0.1f", gotConfig.XMage.MaxMemoryGB),
+		"cmd",
+		"/C",
+		//"start",
+		filepath.Join(gotConfig.XMage.JavaPath, "bin", "java"),
+		"-Xms"+strconv.Itoa(minMemoryMB)+"m",
+		"-Xmx"+strconv.Itoa(maxMemoryMB)+"m",
 		"-Dfile.encoding=UTF-8",
 		"-jar",
 		"./lib/mage-client-1.4.50.jar")
 
 	cmd.Dir = filepath.Join(versionDir, "mage-client")
 	cmd.Env = os.Environ()
-	cmd.Env = append(cmd.Env, "JAVA_HOME="+gotConfig.XMage.JavaPath)
-	cmd.Env = append(cmd.Env, "CLASSPATH="+gotConfig.XMage.JavaPath)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
 
 	return cmd.Start()
 }

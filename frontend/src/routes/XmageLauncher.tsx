@@ -1,133 +1,167 @@
-import { Box, Button, Stack, TextField } from "@mui/material";
+import {
+  Box,
+  Button,
+  Container,
+  Slider,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { useEffect, useState } from "react";
 
 import {
   GetConfig,
   WriteConfig,
 } from "../../wailsjs/go/services/ConfigService";
-import { ExportDecksToXMage } from "../../wailsjs/go/services/MoxfieldService";
+import { StartXmage } from "../../wailsjs/go/services/XMageService";
 import { services } from "../../wailsjs/go/models";
-
-interface ExportConfigProps {
-  username: string;
-  path: string;
-  onUsernameChange: (username: string) => void;
-  onPathChange: (path: string) => void;
-}
-
-function ExportConfig(props: ExportConfigProps) {
-  const [moxfieldUsername, setMoxfieldUsername] = useState(props.username);
-  const [exportPath, setExportPath] = useState(props.path);
-
-  return (
-    <Box width="100%">
-      <TextField
-        variant="outlined"
-        label="Moxfield Username"
-        value={moxfieldUsername}
-        onChange={(evt) => {
-          setMoxfieldUsername(evt.target.value);
-          props.onUsernameChange(evt.target.value);
-        }}
-      />
-      <TextField
-        variant="outlined"
-        label="Export Directory"
-        value={exportPath}
-        onChange={(evt) => {
-          setExportPath(evt.target.value);
-          props.onPathChange(evt.target.value);
-        }}
-      />
-    </Box>
-  );
-}
+import colors from "../colors";
 
 export default function XmageLauncher() {
-  const [exportConfigs, setExportConfigs] = useState<
-    services.MoxfieldExportConfig[]
-  >([]);
+  const [gotConfig, setGotConfig] = useState<services.Config>();
+  const [xmageInstallPath, setXmageInstallPath] = useState("");
+  const [javaPath, setJavaPath] = useState("");
+  const [maxMemoryGB, setMaxMemoryGB] = useState(2);
+  const [minMemoryGB, setMinMemoryGB] = useState(1);
 
   useEffect(() => {
     const initFunc = async () => {
       GetConfig().then((newConfig) => {
-        setExportConfigs(newConfig.moxfield_exports);
+        setGotConfig(newConfig);
+        setXmageInstallPath(newConfig.xmage.install_path);
+        setJavaPath(newConfig.xmage.java_path);
+        if (newConfig.xmage.min_memory_gb > 1) {
+          setMinMemoryGB(newConfig.xmage.min_memory_gb);
+        }
+
+        if (newConfig.xmage.max_memory_gb > 1) {
+          setMaxMemoryGB(newConfig.xmage.max_memory_gb);
+        }
       });
     };
+
     initFunc().catch((err) => {
       console.error(err);
     });
-  }, [setExportConfigs]);
+  }, [
+    setGotConfig,
+    setXmageInstallPath,
+    setJavaPath,
+    setMinMemoryGB,
+    setMaxMemoryGB,
+  ]);
+
+  const marks = [
+    {
+      value: 1,
+      label: "1GB",
+    },
+    {
+      value: 4,
+      label: "4GB",
+    },
+    {
+      value: 8,
+      label: "8GB",
+    },
+    {
+      value: 16,
+      label: "16GB",
+    },
+  ];
+
+  function gbText(value: number) {
+    return `${value}GB`;
+  }
+
   return (
-    <Box width="100%" height="100%">
-      XMage Launcher
-      <Stack direction="row" spacing={2}>
-        {exportConfigs.map((exportConfig, index) => {
-          return (
-            <ExportConfig
-              username={exportConfig.username}
-              path={exportConfig.path}
-              onPathChange={(newPath) => {
-                setExportConfigs([
-                  ...exportConfigs.slice(0, index),
-                  {
-                    ...exportConfig,
-                    path: newPath,
-                  },
-                  ...exportConfigs.slice(index + 1),
-                ]);
+    <Container>
+      <Box padding="1em" bgcolor="#f5f5f5">
+        XMage Launcher
+        <Stack direction="column" spacing={2}>
+          <TextField
+            variant="outlined"
+            label="XMage Install Path"
+            value={xmageInstallPath}
+            onChange={(evt) => {
+              setXmageInstallPath(evt.target.value);
+            }}
+          />
+          <TextField
+            variant="outlined"
+            label="Java Install Path"
+            value={javaPath}
+            onChange={(evt) => {
+              setJavaPath(evt.target.value);
+            }}
+          />
+          <Box>
+            <Typography color="#000000">Minimum RAM:</Typography>
+            <Slider
+              defaultValue={2}
+              step={0.5}
+              min={1}
+              max={16}
+              value={minMemoryGB}
+              onChange={(evt, newValue) => {
+                if (typeof newValue === "number") {
+                  setMinMemoryGB(newValue);
+                }
               }}
-              onUsernameChange={(newUsername) => {
-                setExportConfigs([
-                  ...exportConfigs.slice(0, index),
-                  {
-                    ...exportConfig,
-                    username: newUsername,
-                  },
-                  ...exportConfigs.slice(index + 1),
-                ]);
-              }}
+              valueLabelDisplay="auto"
+              getAriaValueText={gbText}
+              marks={marks}
             />
-          );
-        })}
-        <Button
-          onClick={() => {
-            setExportConfigs([{ username: "", path: "" }, ...exportConfigs]);
-          }}
-        >
-          New
-        </Button>
-        <Button
-          onClick={async () => {
-            const gotConfig = await GetConfig().catch((err) => {
-              console.log(err);
-            });
+          </Box>
+          <Box>
+            <Typography color="#000000">Maximum RAM:</Typography>
+            <Slider
+              defaultValue={2}
+              step={0.5}
+              min={1}
+              max={16}
+              value={maxMemoryGB}
+              onChange={(evt, newValue) => {
+                if (typeof newValue === "number") {
+                  setMaxMemoryGB(newValue);
+                }
+              }}
+              valueLabelDisplay="auto"
+              getAriaValueText={gbText}
+              marks={marks}
+            />
+          </Box>
+          <Button
+            onClick={async () => {
+              const freshConfig = await GetConfig().catch((err) => {
+                console.log(err);
+              });
 
-            if (!gotConfig) {
-              return;
-            }
+              if (!freshConfig) {
+                return;
+              }
 
-            gotConfig.moxfield_exports = exportConfigs;
-            await WriteConfig(gotConfig).catch((err) => {
-              console.log(err);
-            });
-          }}
-        >
-          Save
-        </Button>
-        <Button
-          onClick={async () => {
-            exportConfigs.forEach(async (exportConfig) => {
-              await ExportDecksToXMage(
-                exportConfig.username,
-                exportConfig.path
-              );
-            });
-          }}
-        >
-          Export
-        </Button>
-      </Stack>
-    </Box>
+              freshConfig.xmage.install_path = xmageInstallPath;
+              freshConfig.xmage.java_path = javaPath;
+              freshConfig.xmage.min_memory_gb = minMemoryGB;
+              freshConfig.xmage.max_memory_gb = maxMemoryGB;
+
+              await WriteConfig(freshConfig).catch((err) => {
+                console.log(err);
+              });
+            }}
+          >
+            Save
+          </Button>
+          <Button
+            onClick={async () => {
+              await StartXmage();
+            }}
+          >
+            Start
+          </Button>
+        </Stack>
+      </Box>
+    </Container>
   );
 }
