@@ -36,8 +36,10 @@ type MoxfieldExportConfig struct {
 }
 
 type XMageConfig struct {
-	JavaPath    string `json:"java_path"`
-	InstallPath string `json:"install_path"`
+	JavaPath    string  `json:"java_path"`
+	InstallPath string  `json:"install_path"`
+	MaxMemoryGB float64 `json:"max_memory_gb"`
+	MinMemoryGB float64 `json:"min_memory_gb"`
 }
 
 type Config struct {

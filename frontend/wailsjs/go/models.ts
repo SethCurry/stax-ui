@@ -3,6 +3,8 @@ export namespace services {
 	export class XMageConfig {
 	    java_path: string;
 	    install_path: string;
+	    max_memory_gb: number;
+	    min_memory_gb: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new XMageConfig(source);
@@ -12,6 +14,8 @@ export namespace services {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.java_path = source["java_path"];
 	        this.install_path = source["install_path"];
+	        this.max_memory_gb = source["max_memory_gb"];
+	        this.min_memory_gb = source["min_memory_gb"];
 	    }
 	}
 	export class MoxfieldExportConfig {
