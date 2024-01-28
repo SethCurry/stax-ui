@@ -9,6 +9,13 @@ tasks:
   dev:
     cmds:
       - wails dev
+  build:
+    cmds:
+      - wails build
+  deploy:
+    deps: [build]
+    cmds:
+      - cp build/bin/staxui.exe E:/magix/staxui.exe
   default:
     cmds:
       - echo "{{.GREETING}}"

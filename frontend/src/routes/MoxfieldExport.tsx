@@ -1,4 +1,4 @@
-import { Box, Button, Stack, TextField } from "@mui/material";
+import { Box, Button, Container, Stack, TextField } from "@mui/material";
 import { useEffect, useState } from "react";
 
 import {
@@ -7,6 +7,8 @@ import {
 } from "../../wailsjs/go/services/ConfigService";
 import { ExportDecksToXMage } from "../../wailsjs/go/services/MoxfieldService";
 import { services } from "../../wailsjs/go/models";
+import StaxBox from "../containers/StaxBox";
+import SmallTextContainer from "../containers/SmallTextContainer";
 
 interface ExportConfigProps {
   username: string;
@@ -20,7 +22,7 @@ function ExportConfig(props: ExportConfigProps) {
   const [exportPath, setExportPath] = useState(props.path);
 
   return (
-    <Box width="100%">
+    <SmallTextContainer>
       <TextField
         variant="outlined"
         label="Moxfield Username"
@@ -39,7 +41,7 @@ function ExportConfig(props: ExportConfigProps) {
           props.onPathChange(evt.target.value);
         }}
       />
-    </Box>
+    </SmallTextContainer>
   );
 }
 
@@ -59,7 +61,7 @@ export default function MoxfieldExport() {
     });
   }, [setExportConfigs]);
   return (
-    <Box width="100%" height="100%">
+    <Container>
       Moxfield Export
       <Stack direction="column" spacing={2}>
         {exportConfigs.map((exportConfig, index) => {
@@ -128,6 +130,6 @@ export default function MoxfieldExport() {
           Export
         </Button>
       </Stack>
-    </Box>
+    </Container>
   );
 }
