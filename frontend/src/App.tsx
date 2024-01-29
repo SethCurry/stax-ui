@@ -16,7 +16,7 @@ export default function App() {
             <Route
               path="/"
               element={
-                <DefaultContainer>
+                <DefaultContainer title="StaxUI">
                   <Home />
                 </DefaultContainer>
               }
@@ -24,7 +24,7 @@ export default function App() {
             <Route
               path="/moxfield/export"
               element={
-                <DefaultContainer>
+                <DefaultContainer title="Moxfield">
                   <MoxfieldExport />
                 </DefaultContainer>
               }
@@ -32,7 +32,7 @@ export default function App() {
             <Route
               path="/xmage"
               element={
-                <DefaultContainer>
+                <DefaultContainer title="Xmage">
                   <XmageLauncher />
                 </DefaultContainer>
               }

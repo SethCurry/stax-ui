@@ -1,4 +1,4 @@
-import { Box, Button, Container, Stack, TextField } from "@mui/material";
+import { Box, Button, Container, Paper, Stack, TextField } from "@mui/material";
 import { useEffect, useState } from "react";
 
 import {
@@ -9,6 +9,7 @@ import { ExportDecksToXMage } from "../../wailsjs/go/services/MoxfieldService";
 import { services } from "../../wailsjs/go/models";
 import StaxBox from "../containers/StaxBox";
 import SmallTextContainer from "../containers/SmallTextContainer";
+import { FaFileExport, FaPlus, FaSave } from "react-icons/fa";
 
 interface ExportConfigProps {
   username: string;
@@ -62,8 +63,13 @@ export default function MoxfieldExport() {
   }, [setExportConfigs]);
   return (
     <Container>
-      Moxfield Export
-      <Stack direction="column" spacing={2}>
+      <Stack
+        direction="column"
+        spacing={2}
+        component={Paper}
+        marginBottom="2em"
+        padding="1em"
+      >
         {exportConfigs.map((exportConfig, index) => {
           return (
             <ExportConfig
@@ -92,43 +98,51 @@ export default function MoxfieldExport() {
             />
           );
         })}
-        <Button
-          onClick={() => {
-            setExportConfigs([{ username: "", path: "" }, ...exportConfigs]);
-          }}
-        >
-          New
-        </Button>
-        <Button
-          onClick={async () => {
-            const gotConfig = await GetConfig().catch((err) => {
-              console.log(err);
-            });
+        <Stack direction="row" spacing={2} marginBottom="1em">
+          <Button
+            variant="contained"
+            onClick={() => {
+              setExportConfigs([{ username: "", path: "" }, ...exportConfigs]);
+            }}
+            startIcon={<FaPlus />}
+          >
+            New
+          </Button>
+          <Button
+            startIcon={<FaSave />}
+            variant="contained"
+            onClick={async () => {
+              const gotConfig = await GetConfig().catch((err) => {
+                console.log(err);
+              });
 
-            if (!gotConfig) {
-              return;
-            }
+              if (!gotConfig) {
+                return;
+              }
 
-            gotConfig.moxfield_exports = exportConfigs;
-            await WriteConfig(gotConfig).catch((err) => {
-              console.log(err);
-            });
-          }}
-        >
-          Save
-        </Button>
-        <Button
-          onClick={async () => {
-            exportConfigs.forEach(async (exportConfig) => {
-              await ExportDecksToXMage(
-                exportConfig.username,
-                exportConfig.path
-              );
-            });
-          }}
-        >
-          Export
-        </Button>
+              gotConfig.moxfield_exports = exportConfigs;
+              await WriteConfig(gotConfig).catch((err) => {
+                console.log(err);
+              });
+            }}
+          >
+            Save
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<FaFileExport />}
+            onClick={async () => {
+              exportConfigs.forEach(async (exportConfig) => {
+                await ExportDecksToXMage(
+                  exportConfig.username,
+                  exportConfig.path
+                );
+              });
+            }}
+          >
+            Export
+          </Button>
+        </Stack>
       </Stack>
     </Container>
   );

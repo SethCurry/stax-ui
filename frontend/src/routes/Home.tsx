@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Greet } from "../../wailsjs/go/main/App";
 import { Stack } from "@mui/material";
+import PixelText from "../containers/text/PixelText";
 
 function Home() {
   const [resultText, setResultText] = useState(
@@ -14,11 +15,7 @@ function Home() {
     Greet(name).then(updateResultText);
   }
 
-  return (
-    <Stack spacing={2}>
-      <h1>Stax UI</h1>
-    </Stack>
-  );
+  return <Stack spacing={2}></Stack>;
 }
 
 export default Home;

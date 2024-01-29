@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   Container,
+  Paper,
   Slider,
   Stack,
   TextField,
@@ -76,61 +77,60 @@ export default function XmageLauncher() {
 
   return (
     <Container>
-      <Box padding="1em" bgcolor="#f5f5f5">
-        XMage Launcher
-        <Stack direction="column" spacing={2}>
-          <TextField
-            variant="outlined"
-            label="XMage Install Path"
-            value={xmageInstallPath}
-            onChange={(evt) => {
-              setXmageInstallPath(evt.target.value);
+      <Stack direction="column" spacing={2} component={Paper} padding="1em">
+        <TextField
+          variant="outlined"
+          label="XMage Install Path"
+          value={xmageInstallPath}
+          onChange={(evt) => {
+            setXmageInstallPath(evt.target.value);
+          }}
+        />
+        <TextField
+          variant="outlined"
+          label="Java Install Path"
+          value={javaPath}
+          onChange={(evt) => {
+            setJavaPath(evt.target.value);
+          }}
+        />
+        <Box>
+          <Typography color="#000000">Minimum RAM:</Typography>
+          <Slider
+            defaultValue={2}
+            step={0.5}
+            min={1}
+            max={16}
+            value={minMemoryGB}
+            onChange={(evt, newValue) => {
+              if (typeof newValue === "number") {
+                setMinMemoryGB(newValue);
+              }
             }}
+            valueLabelDisplay="auto"
+            getAriaValueText={gbText}
+            marks={marks}
           />
-          <TextField
-            variant="outlined"
-            label="Java Install Path"
-            value={javaPath}
-            onChange={(evt) => {
-              setJavaPath(evt.target.value);
+        </Box>
+        <Box>
+          <Typography color="#000000">Maximum RAM:</Typography>
+          <Slider
+            defaultValue={2}
+            step={0.5}
+            min={1}
+            max={16}
+            value={maxMemoryGB}
+            onChange={(evt, newValue) => {
+              if (typeof newValue === "number") {
+                setMaxMemoryGB(newValue);
+              }
             }}
+            valueLabelDisplay="auto"
+            getAriaValueText={gbText}
+            marks={marks}
           />
-          <Box>
-            <Typography color="#000000">Minimum RAM:</Typography>
-            <Slider
-              defaultValue={2}
-              step={0.5}
-              min={1}
-              max={16}
-              value={minMemoryGB}
-              onChange={(evt, newValue) => {
-                if (typeof newValue === "number") {
-                  setMinMemoryGB(newValue);
-                }
-              }}
-              valueLabelDisplay="auto"
-              getAriaValueText={gbText}
-              marks={marks}
-            />
-          </Box>
-          <Box>
-            <Typography color="#000000">Maximum RAM:</Typography>
-            <Slider
-              defaultValue={2}
-              step={0.5}
-              min={1}
-              max={16}
-              value={maxMemoryGB}
-              onChange={(evt, newValue) => {
-                if (typeof newValue === "number") {
-                  setMaxMemoryGB(newValue);
-                }
-              }}
-              valueLabelDisplay="auto"
-              getAriaValueText={gbText}
-              marks={marks}
-            />
-          </Box>
+        </Box>
+        <Stack direction="row">
           <Button
             onClick={async () => {
               const freshConfig = await GetConfig().catch((err) => {
@@ -161,7 +161,7 @@ export default function XmageLauncher() {
             Start
           </Button>
         </Stack>
-      </Box>
+      </Stack>
     </Container>
   );
 }
